@@ -6,7 +6,7 @@ import {
   Sparkles,
   Html,
 } from "@react-three/drei";
-import { EffectComposer, Bloom, Vignette, DepthOfField } from "@react-three/postprocessing";
+import { EffectComposer, Bloom, Vignette, DepthOfField, SSAO } from "@react-three/postprocessing";
 import { Suspense, useRef, useState } from "react";
 import * as THREE from "three";
 import { Shoe, type Colorway } from "./Shoe";
@@ -92,10 +92,10 @@ function SceneInner() {
       <fog attach="fog" args={["#0a0b10", 8, 22]} />
 
       {/* Soft studio rig — low intensity, environment does most of the lighting */}
-      <ambientLight intensity={0.12} />
+      <ambientLight intensity={0.08} />
       <directionalLight
         position={[5, 8, 5]}
-        intensity={0.65}
+        intensity={0.42}
         color="#ffffff"
         castShadow
         shadow-mapSize-width={4096}
@@ -103,10 +103,10 @@ function SceneInner() {
         shadow-bias={-0.0001}
         shadow-radius={6}
       />
-      <directionalLight position={[-6, 4, -3]} intensity={0.22} color="#8ec1ff" />
-      <directionalLight position={[0, -2, 4]} intensity={0.15} color="#ffb088" />
+      <directionalLight position={[-6, 4, -3]} intensity={0.14} color="#8ec1ff" />
+      <directionalLight position={[0, -2, 4]} intensity={0.1} color="#ffb088" />
 
-      <Environment preset="studio" environmentIntensity={0.55} background={false} />
+      <Environment preset="studio" environmentIntensity={0.38} background={false} />
 
       <Particles count={180} />
       <Sparkles count={40} scale={8} size={1.2} speed={0.2} color="#ffffff" opacity={0.25} />
@@ -129,7 +129,8 @@ function SceneInner() {
       <CameraRig shoeRef={shoeRef} />
 
       <EffectComposer>
-        <Bloom intensity={0.18} luminanceThreshold={0.95} luminanceSmoothing={0.4} mipmapBlur />
+        <SSAO samples={32} radius={0.14} intensity={18} luminanceInfluence={0.55} />
+        <Bloom intensity={0.06} luminanceThreshold={1.15} luminanceSmoothing={0.5} mipmapBlur />
         <DepthOfField focusDistance={0.018} focalLength={0.045} bokehScale={1.2} />
         <Vignette eskil={false} offset={0.3} darkness={0.85} />
       </EffectComposer>
@@ -147,7 +148,7 @@ export function Experience() {
       gl={{
         antialias: true,
         toneMapping: THREE.ACESFilmicToneMapping,
-        toneMappingExposure: 0.6,
+        toneMappingExposure: 0.42,
         powerPreference: "high-performance",
       }}
 
