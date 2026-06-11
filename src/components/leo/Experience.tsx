@@ -15,15 +15,16 @@ import { scrollState } from "./scrollState";
 
 // Camera keyframes per section (position + lookAt target)
 const CAM_KEYS: Array<{ pos: [number, number, number]; tgt: [number, number, number]; fov: number }> = [
-  { pos: [0, 0.4, 3.2], tgt: [0, 0, 0], fov: 35 }, // hero
-  { pos: [2.6, 1.2, 3.0], tgt: [0, 0, 0], fov: 38 }, // exploded
-  { pos: [0.9, -0.2, 1.2], tgt: [0, 0, 0], fov: 22 }, // materials macro
-  { pos: [-3.0, 0.6, 2.4], tgt: [0, 0.1, 0], fov: 50 }, // performance
-  { pos: [0, 0.3, 2.8], tgt: [0, 0, 0], fov: 32 }, // colorways
-  { pos: [3.0, 0.5, 0.5], tgt: [0, 0, 0], fov: 35 }, // 360
-  { pos: [0.0, 0.0, 0.6], tgt: [0, 0, 0], fov: 60 }, // technology / inside
-  { pos: [0, 0.4, 3.6], tgt: [0, 0, 0], fov: 30 }, // finale
+  { pos: [0, 0.4, 4.2], tgt: [0, 0, 0], fov: 32 },     // hero — large hero shot
+  { pos: [3.2, 1.6, 3.8], tgt: [0, 0, 0], fov: 36 },   // exploded — 3/4 view
+  { pos: [1.1, -0.3, 1.6], tgt: [0, -0.2, 0], fov: 24 }, // materials macro (sole/fabric)
+  { pos: [-3.6, 0.8, 3.0], tgt: [0, 0.15, 0], fov: 40 }, // performance — side profile
+  { pos: [0, 0.3, 3.6], tgt: [0, 0, 0], fov: 30 },     // colorways — front hero
+  { pos: [3.8, 0.6, 0.6], tgt: [0, 0, 0], fov: 34 },   // 360 orbit
+  { pos: [0.2, 0.6, 1.4], tgt: [0, 0.1, 0], fov: 42 }, // technology — heel closeup
+  { pos: [0, 0.4, 4.6], tgt: [0, 0, 0], fov: 28 },     // finale — wide cinematic
 ];
+
 
 function CameraRig({ shoeRef }: { shoeRef: React.MutableRefObject<THREE.Group | null> }) {
   const { camera } = useThree();
@@ -77,7 +78,6 @@ function SceneInner() {
   const [colorway, setColorway] = useState<Colorway>("white");
   const [explode, setExplode] = useState(0);
 
-  // Poll scrollState for state-driven props
   useFrame(() => {
     if (scrollState.colorway !== colorway) setColorway(scrollState.colorway);
     const target = scrollState.explode;
@@ -88,53 +88,50 @@ function SceneInner() {
 
   return (
     <>
-      <color attach="background" args={["#06070a"]} />
-      <fog attach="fog" args={["#06070a", 6, 18]} />
+      <color attach="background" args={["#0a0b10"]} />
+      <fog attach="fog" args={["#0a0b10", 8, 22]} />
 
-      <ambientLight intensity={0.25} />
-      <spotLight
-        position={[4, 6, 4]}
-        angle={0.35}
-        penumbra={1}
-        intensity={120}
+      {/* Balanced studio lighting — no blown-out highlights */}
+      <ambientLight intensity={0.35} />
+      <directionalLight
+        position={[5, 8, 5]}
+        intensity={1.8}
         color="#ffffff"
         castShadow
+        shadow-mapSize-width={2048}
+        shadow-mapSize-height={2048}
+        shadow-bias={-0.0001}
       />
-      <spotLight
-        position={[-5, 3, -2]}
-        angle={0.5}
-        penumbra={1}
-        intensity={60}
-        color="#ff4d4d"
-      />
-      <spotLight position={[0, -3, 4]} angle={0.6} penumbra={1} intensity={30} color="#88aaff" />
+      <directionalLight position={[-6, 4, -3]} intensity={0.6} color="#7ab8ff" />
+      <directionalLight position={[0, -2, 4]} intensity={0.4} color="#ff9c7a" />
+      <spotLight position={[0, 6, 0]} angle={0.6} penumbra={1} intensity={20} color="#ffffff" />
 
-      <Environment preset="studio" environmentIntensity={0.6} />
+      <Environment preset="studio" environmentIntensity={0.75} background={false} />
 
-      <Particles count={300} />
-      <Sparkles count={60} scale={6} size={2} speed={0.3} color="#ffffff" opacity={0.6} />
+      <Particles count={220} />
+      <Sparkles count={50} scale={8} size={1.5} speed={0.25} color="#ffffff" opacity={0.4} />
 
-      <Float speed={1.2} rotationIntensity={0.15} floatIntensity={0.35}>
-        <group ref={shoeRef} position={[0, -0.1, 0]} scale={1}>
-          <Shoe colorway={colorway} explode={explode} />
+      <Float speed={1.1} rotationIntensity={0.12} floatIntensity={0.3}>
+        <group ref={shoeRef} position={[0, 0, 0]}>
+          <Shoe colorway={colorway} explode={explode} targetSize={2.4} />
         </group>
       </Float>
 
       <ContactShadows
-        position={[0, -0.55, 0]}
-        opacity={0.55}
-        scale={8}
-        blur={2.5}
-        far={3}
+        position={[0, -1.1, 0]}
+        opacity={0.7}
+        scale={10}
+        blur={2.8}
+        far={4}
         color="#000000"
       />
 
       <CameraRig shoeRef={shoeRef} />
 
       <EffectComposer>
-        <Bloom intensity={0.7} luminanceThreshold={0.7} luminanceSmoothing={0.2} mipmapBlur />
-        <DepthOfField focusDistance={0.012} focalLength={0.04} bokehScale={2} />
-        <Vignette eskil={false} offset={0.2} darkness={0.85} />
+        <Bloom intensity={0.4} luminanceThreshold={0.85} luminanceSmoothing={0.3} mipmapBlur />
+        <DepthOfField focusDistance={0.015} focalLength={0.05} bokehScale={1.5} />
+        <Vignette eskil={false} offset={0.25} darkness={0.75} />
       </EffectComposer>
     </>
   );
@@ -145,8 +142,12 @@ export function Experience() {
     <Canvas
       shadows
       dpr={[1, 2]}
-      camera={{ position: [0, 0.4, 3.2], fov: 35, near: 0.1, far: 100 }}
-      gl={{ antialias: true, toneMapping: THREE.ACESFilmicToneMapping, toneMappingExposure: 1.1 }}
+      camera={{ position: [0, 0.5, 5.5], fov: 32, near: 0.1, far: 100 }}
+      gl={{
+        antialias: true,
+        toneMapping: THREE.ACESFilmicToneMapping,
+        toneMappingExposure: 0.85,
+      }}
       onPointerMove={(e) => {
         const w = window.innerWidth;
         const h = window.innerHeight;
@@ -160,3 +161,4 @@ export function Experience() {
     </Canvas>
   );
 }
+
