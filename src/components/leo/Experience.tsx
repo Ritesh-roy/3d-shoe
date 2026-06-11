@@ -15,15 +15,16 @@ import { scrollState } from "./scrollState";
 
 // Camera keyframes per section (position + lookAt target)
 const CAM_KEYS: Array<{ pos: [number, number, number]; tgt: [number, number, number]; fov: number }> = [
-  { pos: [0, 0.4, 3.2], tgt: [0, 0, 0], fov: 35 }, // hero
-  { pos: [2.6, 1.2, 3.0], tgt: [0, 0, 0], fov: 38 }, // exploded
-  { pos: [0.9, -0.2, 1.2], tgt: [0, 0, 0], fov: 22 }, // materials macro
-  { pos: [-3.0, 0.6, 2.4], tgt: [0, 0.1, 0], fov: 50 }, // performance
-  { pos: [0, 0.3, 2.8], tgt: [0, 0, 0], fov: 32 }, // colorways
-  { pos: [3.0, 0.5, 0.5], tgt: [0, 0, 0], fov: 35 }, // 360
-  { pos: [0.0, 0.0, 0.6], tgt: [0, 0, 0], fov: 60 }, // technology / inside
-  { pos: [0, 0.4, 3.6], tgt: [0, 0, 0], fov: 30 }, // finale
+  { pos: [0, 0.4, 4.2], tgt: [0, 0, 0], fov: 32 },     // hero — large hero shot
+  { pos: [3.2, 1.6, 3.8], tgt: [0, 0, 0], fov: 36 },   // exploded — 3/4 view
+  { pos: [1.1, -0.3, 1.6], tgt: [0, -0.2, 0], fov: 24 }, // materials macro (sole/fabric)
+  { pos: [-3.6, 0.8, 3.0], tgt: [0, 0.15, 0], fov: 40 }, // performance — side profile
+  { pos: [0, 0.3, 3.6], tgt: [0, 0, 0], fov: 30 },     // colorways — front hero
+  { pos: [3.8, 0.6, 0.6], tgt: [0, 0, 0], fov: 34 },   // 360 orbit
+  { pos: [0.2, 0.6, 1.4], tgt: [0, 0.1, 0], fov: 42 }, // technology — heel closeup
+  { pos: [0, 0.4, 4.6], tgt: [0, 0, 0], fov: 28 },     // finale — wide cinematic
 ];
+
 
 function CameraRig({ shoeRef }: { shoeRef: React.MutableRefObject<THREE.Group | null> }) {
   const { camera } = useThree();
