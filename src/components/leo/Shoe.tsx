@@ -1,7 +1,9 @@
 import { useGLTF } from "@react-three/drei";
+import { useThree } from "@react-three/fiber";
 import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import shoeAsset from "@/assets/leo-shoe.glb.asset.json";
+
 
 useGLTF.preload(shoeAsset.url);
 
