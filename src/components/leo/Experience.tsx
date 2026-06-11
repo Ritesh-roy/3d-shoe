@@ -3,10 +3,9 @@ import {
   Environment,
   ContactShadows,
   Float,
-  Sparkles,
   Html,
 } from "@react-three/drei";
-import { EffectComposer, Bloom, Vignette, DepthOfField, SSAO } from "@react-three/postprocessing";
+import { EffectComposer, Bloom, Vignette, SSAO } from "@react-three/postprocessing";
 import { Suspense, useRef, useState } from "react";
 import * as THREE from "three";
 import { Shoe, type Colorway } from "./Shoe";
@@ -88,8 +87,8 @@ function SceneInner() {
 
   return (
     <>
-      <color attach="background" args={["#0a0b10"]} />
-      <fog attach="fog" args={["#0a0b10", 8, 22]} />
+      <color attach="background" args={["#07080c"]} />
+      <fog attach="fog" args={["#07080c", 12, 28]} />
 
       {/* Soft studio rig — low intensity, environment does most of the lighting */}
       <ambientLight intensity={0.08} />
@@ -108,12 +107,11 @@ function SceneInner() {
 
       <Environment preset="studio" environmentIntensity={0.38} background={false} />
 
-      <Particles count={180} />
-      <Sparkles count={40} scale={8} size={1.2} speed={0.2} color="#ffffff" opacity={0.25} />
+      <Particles count={60} />
 
       <Float speed={1.1} rotationIntensity={0.12} floatIntensity={0.3}>
         <group ref={shoeRef} position={[0, 0, 0]}>
-          <Shoe colorway={colorway} explode={explode} targetSize={2.6} />
+          <Shoe colorway={colorway} explode={explode} targetSize={2.85} />
         </group>
       </Float>
 
@@ -128,10 +126,9 @@ function SceneInner() {
 
       <CameraRig shoeRef={shoeRef} />
 
-      <EffectComposer>
+      <EffectComposer multisampling={8} enableNormalPass>
         <SSAO samples={32} radius={0.14} intensity={18} luminanceInfluence={0.55} />
-        <Bloom intensity={0.06} luminanceThreshold={1.15} luminanceSmoothing={0.5} mipmapBlur />
-        <DepthOfField focusDistance={0.018} focalLength={0.045} bokehScale={1.2} />
+        <Bloom intensity={0.025} luminanceThreshold={1.3} luminanceSmoothing={0.55} mipmapBlur />
         <Vignette eskil={false} offset={0.3} darkness={0.85} />
       </EffectComposer>
 
@@ -143,7 +140,7 @@ export function Experience() {
   return (
     <Canvas
       shadows
-      dpr={[1.25, 2]}
+      dpr={[1.5, 2.5]}
       camera={{ position: [0, 0.5, 5.5], fov: 32, near: 0.1, far: 100 }}
       gl={{
         antialias: true,
