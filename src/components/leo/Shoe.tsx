@@ -24,11 +24,22 @@ interface ShoeProps {
 
 export function Shoe({ colorway = "white", explode = 0, targetSize = 2.2 }: ShoeProps) {
   const { scene } = useGLTF(shoeAsset.url) as any;
+  const { gl } = useThree();
   const root = useRef<THREE.Group>(null);
 
   // Clone + normalize the model: center it & scale so its largest dimension == targetSize
   const { cloned, fitScale, centerOffset } = useMemo(() => {
     const c = scene.clone(true);
+    const maxAnisotropy = gl.capabilities.getMaxAnisotropy();
+
+    const tuneTexture = (texture?: THREE.Texture | null, colorMap = false) => {
+      if (!texture) return;
+      texture.anisotropy = maxAnisotropy;
+      texture.minFilter = THREE.LinearMipmapLinearFilter;
+      texture.magFilter = THREE.LinearFilter;
+      if (colorMap) texture.colorSpace = THREE.SRGBColorSpace;
+      texture.needsUpdate = true;
+    };
 
     // Compute bounding box of raw scene
     const box = new THREE.Box3().setFromObject(c);
@@ -44,12 +55,29 @@ export function Shoe({ colorway = "white", explode = 0, targetSize = 2.2 }: Shoe
       if (mesh.isMesh) {
         mesh.castShadow = true;
         mesh.receiveShadow = true;
-        const mat = mesh.material as THREE.MeshStandardMaterial;
-        if (mat && "roughness" in mat) {
-          mat.envMapIntensity = 1.15;
-          // slight roughness clamp so it never goes pure mirror
-          if (mat.roughness < 0.15) mat.roughness = 0.25;
-        }
+        const materials = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+        materials.forEach((material) => {
+          const mat = material as THREE.MeshStandardMaterial;
+          if (!mat || !("roughness" in mat)) return;
+          mat.envMapIntensity = 0.65;
+          if (mat.roughness < 0.28) mat.roughness = 0.32;
+          if (mat.metalness > 0.45) mat.metalness = 0.35;
+          if (mat.color) {
+            const brightest = Math.max(mat.color.r, mat.color.g, mat.color.b);
+            if (brightest > 0.9) mat.color.multiplyScalar(0.82);
+          }
+          if (mat.emissive) mat.emissive.setRGB(0, 0, 0);
+          if ("emissiveIntensity" in mat) mat.emissiveIntensity = 0;
+          tuneTexture(mat.map, true);
+          tuneTexture(mat.normalMap);
+          tuneTexture(mat.roughnessMap);
+          tuneTexture(mat.metalnessMap);
+          tuneTexture(mat.aoMap);
+          tuneTexture(mat.bumpMap);
+          tuneTexture(mat.alphaMap);
+          tuneTexture(mat.emissiveMap, true);
+          mat.needsUpdate = true;
+        });
         (mesh.userData as any).origPos = mesh.position.clone();
         const meshWorld = new THREE.Vector3();
         mesh.getWorldPosition(meshWorld);
@@ -62,7 +90,7 @@ export function Shoe({ colorway = "white", explode = 0, targetSize = 2.2 }: Shoe
     });
 
     return { cloned: c, fitScale: fit, centerOffset: center };
-  }, [scene, targetSize]);
+  }, [gl, scene, targetSize]);
 
   // Color tinting
   useEffect(() => {
@@ -76,7 +104,7 @@ export function Shoe({ colorway = "white", explode = 0, targetSize = 2.2 }: Shoe
             (mesh.userData as any).origColor = mat.color.clone();
           }
           const orig = (mesh.userData as any).origColor as THREE.Color;
-          mat.color.copy(orig).lerp(tint, 0.5);
+          mat.color.copy(orig).lerp(tint, colorway === "white" ? 0.04 : 0.18);
           mat.needsUpdate = true;
         }
       }

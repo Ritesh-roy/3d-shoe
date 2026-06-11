@@ -132,8 +132,10 @@ export function LeoSite() {
                 viewport={{ once: false, amount: 0.4 }}
                 transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
                 className={
-                  s.id === "hero" || s.id === "finale"
-                    ? "max-w-3xl mx-auto text-center"
+                  s.id === "hero"
+                    ? "max-w-sm pt-28 md:pt-36 text-left"
+                    : s.id === "finale"
+                    ? "max-w-lg ml-auto text-right"
                     : i % 2 === 0
                     ? "max-w-xl"
                     : "max-w-xl ml-auto text-right"
@@ -142,8 +144,10 @@ export function LeoSite() {
                 <div className="text-[11px] tracking-[0.4em] text-white/50 mb-6">{s.kicker}</div>
                 <h2
                   className={
-                    s.id === "hero" || s.id === "finale"
-                      ? "text-6xl md:text-[8rem] font-black tracking-tight leading-[0.9]"
+                    s.id === "hero"
+                      ? "text-4xl md:text-6xl font-black tracking-tight leading-none"
+                      : s.id === "finale"
+                      ? "text-5xl md:text-7xl font-black tracking-tight leading-none"
                       : "text-4xl md:text-6xl font-bold tracking-tight leading-tight"
                   }
                 >
