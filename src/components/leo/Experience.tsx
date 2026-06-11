@@ -142,13 +142,15 @@ export function Experience() {
   return (
     <Canvas
       shadows
-      dpr={[1, 2]}
+      dpr={[1.25, 2]}
       camera={{ position: [0, 0.5, 5.5], fov: 32, near: 0.1, far: 100 }}
       gl={{
         antialias: true,
         toneMapping: THREE.ACESFilmicToneMapping,
-        toneMappingExposure: 0.85,
+        toneMappingExposure: 0.6,
+        powerPreference: "high-performance",
       }}
+
       onPointerMove={(e) => {
         const w = window.innerWidth;
         const h = window.innerHeight;
