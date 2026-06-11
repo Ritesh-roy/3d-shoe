@@ -91,37 +91,37 @@ function SceneInner() {
       <color attach="background" args={["#0a0b10"]} />
       <fog attach="fog" args={["#0a0b10", 8, 22]} />
 
-      {/* Balanced studio lighting — no blown-out highlights */}
-      <ambientLight intensity={0.35} />
+      {/* Soft studio rig — low intensity, environment does most of the lighting */}
+      <ambientLight intensity={0.12} />
       <directionalLight
         position={[5, 8, 5]}
-        intensity={1.8}
+        intensity={0.65}
         color="#ffffff"
         castShadow
-        shadow-mapSize-width={2048}
-        shadow-mapSize-height={2048}
+        shadow-mapSize-width={4096}
+        shadow-mapSize-height={4096}
         shadow-bias={-0.0001}
+        shadow-radius={6}
       />
-      <directionalLight position={[-6, 4, -3]} intensity={0.6} color="#7ab8ff" />
-      <directionalLight position={[0, -2, 4]} intensity={0.4} color="#ff9c7a" />
-      <spotLight position={[0, 6, 0]} angle={0.6} penumbra={1} intensity={20} color="#ffffff" />
+      <directionalLight position={[-6, 4, -3]} intensity={0.22} color="#8ec1ff" />
+      <directionalLight position={[0, -2, 4]} intensity={0.15} color="#ffb088" />
 
-      <Environment preset="studio" environmentIntensity={0.75} background={false} />
+      <Environment preset="studio" environmentIntensity={0.55} background={false} />
 
-      <Particles count={220} />
-      <Sparkles count={50} scale={8} size={1.5} speed={0.25} color="#ffffff" opacity={0.4} />
+      <Particles count={180} />
+      <Sparkles count={40} scale={8} size={1.2} speed={0.2} color="#ffffff" opacity={0.25} />
 
       <Float speed={1.1} rotationIntensity={0.12} floatIntensity={0.3}>
         <group ref={shoeRef} position={[0, 0, 0]}>
-          <Shoe colorway={colorway} explode={explode} targetSize={2.4} />
+          <Shoe colorway={colorway} explode={explode} targetSize={2.6} />
         </group>
       </Float>
 
       <ContactShadows
         position={[0, -1.1, 0]}
-        opacity={0.7}
+        opacity={0.85}
         scale={10}
-        blur={2.8}
+        blur={2.4}
         far={4}
         color="#000000"
       />
@@ -129,10 +129,11 @@ function SceneInner() {
       <CameraRig shoeRef={shoeRef} />
 
       <EffectComposer>
-        <Bloom intensity={0.4} luminanceThreshold={0.85} luminanceSmoothing={0.3} mipmapBlur />
-        <DepthOfField focusDistance={0.015} focalLength={0.05} bokehScale={1.5} />
-        <Vignette eskil={false} offset={0.25} darkness={0.75} />
+        <Bloom intensity={0.18} luminanceThreshold={0.95} luminanceSmoothing={0.4} mipmapBlur />
+        <DepthOfField focusDistance={0.018} focalLength={0.045} bokehScale={1.2} />
+        <Vignette eskil={false} offset={0.3} darkness={0.85} />
       </EffectComposer>
+
     </>
   );
 }
@@ -141,13 +142,15 @@ export function Experience() {
   return (
     <Canvas
       shadows
-      dpr={[1, 2]}
+      dpr={[1.25, 2]}
       camera={{ position: [0, 0.5, 5.5], fov: 32, near: 0.1, far: 100 }}
       gl={{
         antialias: true,
         toneMapping: THREE.ACESFilmicToneMapping,
-        toneMappingExposure: 0.85,
+        toneMappingExposure: 0.6,
+        powerPreference: "high-performance",
       }}
+
       onPointerMove={(e) => {
         const w = window.innerWidth;
         const h = window.innerHeight;
