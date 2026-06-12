@@ -117,7 +117,7 @@ export function LeoSite() {
             id={s.id}
             data-section={s.id}
             className="leo-section relative min-h-screen flex items-center"
-            style={{ height: s.id === "exploded" ? "180vh" : "100vh" }}
+            style={{ height: s.id === "materials" ? "260vh" : s.id === "exploded" ? "150vh" : "100vh" }}
           >
             <div className="w-full px-6 md:px-16">
               <motion.div
