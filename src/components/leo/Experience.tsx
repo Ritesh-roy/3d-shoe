@@ -39,21 +39,34 @@ function CameraRig({ shoeRef }: { shoeRef: React.MutableRefObject<THREE.Group | 
   const tmpTgt = useRef(new THREE.Vector3());
 
   useFrame((_, dt) => {
-    const total = CAM_KEYS.length - 1;
-    const p = scrollState.progress * total;
-    const i = Math.floor(p);
-    const f = p - i;
-    const a = CAM_KEYS[Math.min(i, total)];
-    const b = CAM_KEYS[Math.min(i + 1, total)];
+    // Build a fractional camera-key position from active section + sub-progress.
+    // Materials section sweeps across an inner cam-key range for cinematic macros.
+    const sIdx = Math.min(SECTION_CAMS.length - 1, Math.max(0, scrollState.section));
+    const sProg = Math.min(1, Math.max(0, scrollState.sectionProgress));
+
+    let camPos: number;
+    if (sIdx === MATERIALS_SECTION) {
+      const [a, b] = MATERIALS_CAM_RANGE;
+      camPos = a + (b - a) * sProg;
+    } else {
+      const fromCam = SECTION_CAMS[sIdx];
+      const toCam = SECTION_CAMS[Math.min(sIdx + 1, SECTION_CAMS.length - 1)];
+      camPos = fromCam + (toCam - fromCam) * sProg;
+    }
+
+    const totalKeys = CAM_KEYS.length - 1;
+    const i = Math.min(totalKeys, Math.floor(camPos));
+    const f = camPos - i;
+    const a = CAM_KEYS[i];
+    const b = CAM_KEYS[Math.min(i + 1, totalKeys)];
 
     tmpPos.current.set(
       THREE.MathUtils.lerp(a.pos[0], b.pos[0], f),
       THREE.MathUtils.lerp(a.pos[1], b.pos[1], f),
       THREE.MathUtils.lerp(a.pos[2], b.pos[2], f),
     );
-    // subtle mouse parallax
-    tmpPos.current.x += scrollState.mouseX * 0.25;
-    tmpPos.current.y += scrollState.mouseY * 0.15;
+    tmpPos.current.x += scrollState.mouseX * 0.2;
+    tmpPos.current.y += scrollState.mouseY * 0.12;
 
     tmpTgt.current.set(
       THREE.MathUtils.lerp(a.tgt[0], b.tgt[0], f),
@@ -61,20 +74,19 @@ function CameraRig({ shoeRef }: { shoeRef: React.MutableRefObject<THREE.Group | 
       THREE.MathUtils.lerp(a.tgt[2], b.tgt[2], f),
     );
 
-    camera.position.lerp(tmpPos.current, Math.min(1, dt * 4));
+    camera.position.lerp(tmpPos.current, Math.min(1, dt * 3));
     const persp = camera as THREE.PerspectiveCamera;
     const targetFov = THREE.MathUtils.lerp(a.fov, b.fov, f);
-    persp.fov += (targetFov - persp.fov) * Math.min(1, dt * 4);
+    persp.fov += (targetFov - persp.fov) * Math.min(1, dt * 3);
     persp.updateProjectionMatrix();
     camera.lookAt(tmpTgt.current);
 
-    // Shoe slow rotation for 360 section (5..6)
+    // Slow 360 rotation when on the orbit section (index 5)
     if (shoeRef.current) {
-      const seg = scrollState.progress * total;
       let rotY = 0;
-      if (seg > 4.5 && seg < 6) rotY = (seg - 4.5) * Math.PI * 1.6;
-      else if (seg >= 6) rotY = 1.5 * Math.PI * 1.6;
-      shoeRef.current.rotation.y += (rotY - shoeRef.current.rotation.y) * Math.min(1, dt * 3);
+      if (sIdx === 5) rotY = sProg * Math.PI * 2;
+      else if (sIdx > 5) rotY = Math.PI * 2;
+      shoeRef.current.rotation.y += (rotY - shoeRef.current.rotation.y) * Math.min(1, dt * 2.5);
     }
   });
   return null;
@@ -83,14 +95,9 @@ function CameraRig({ shoeRef }: { shoeRef: React.MutableRefObject<THREE.Group | 
 function SceneInner() {
   const shoeRef = useRef<THREE.Group | null>(null);
   const [colorway, setColorway] = useState<Colorway>("white");
-  const [explode, setExplode] = useState(0);
 
   useFrame(() => {
     if (scrollState.colorway !== colorway) setColorway(scrollState.colorway);
-    const target = scrollState.explode;
-    if (Math.abs(target - explode) > 0.005) {
-      setExplode(explode + (target - explode) * 0.12);
-    }
   });
 
   return (
