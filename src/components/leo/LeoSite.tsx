@@ -56,19 +56,22 @@ export function LeoSite() {
             if (self.isActive) scrollState.section = i;
           },
         });
-        // Explode driven by section 2 scroll
-        if (sec.dataset.section === "exploded") {
+        // Explode driven by section scroll for both architecture and materials
+        if (sec.dataset.section === "exploded" || sec.dataset.section === "materials") {
           ScrollTrigger.create({
             trigger: sec,
             start: "top bottom",
             end: "bottom top",
             scrub: true,
             onUpdate: (self) => {
-              scrollState.explode = Math.min(1, Math.max(0, self.progress * 1.4 - 0.2));
+              // ease in then hold then ease out so parts are fully separated mid-section
+              const p = self.progress;
+              const eased = p < 0.5 ? p * 2 : (1 - p) * 2;
+              scrollState.explode = Math.min(1, Math.max(0, eased));
             },
           });
-        } else if (i > 1) {
-          // ensure explode collapses back
+        } else {
+          // ensure explode collapses back outside these sections
           ScrollTrigger.create({
             trigger: sec,
             start: "top center",
