@@ -137,7 +137,7 @@ export function Shoe({ colorway = "white", explode = 0, targetSize = 2.2 }: Shoe
         const orig = (mesh.userData as any).origPos as THREE.Vector3;
         const dir = (mesh.userData as any).explodeDir as THREE.Vector3;
         if (orig && dir) {
-          mesh.position.copy(orig).add(dir.clone().multiplyScalar(explode * 0.35));
+          mesh.position.copy(orig).add(dir.clone().multiplyScalar(explode * 0.75));
         }
       }
     });
