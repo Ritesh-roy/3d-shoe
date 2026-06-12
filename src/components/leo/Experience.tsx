@@ -12,17 +12,25 @@ import { Shoe, type Colorway } from "./Shoe";
 import { Particles } from "./Particles";
 import { scrollState } from "./scrollState";
 
-// Camera keyframes per section (position + lookAt target)
+// Camera keyframes — cinematic storytelling, shoe stays fully assembled
 const CAM_KEYS: Array<{ pos: [number, number, number]; tgt: [number, number, number]; fov: number }> = [
-  { pos: [0, 0.4, 4.2], tgt: [0, 0, 0], fov: 32 },     // hero — large hero shot
-  { pos: [3.2, 1.6, 4.6], tgt: [0, 0, 0], fov: 34 },   // exploded — 3/4 view, pulled back
-  { pos: [2.4, 0.6, 4.2], tgt: [0, 0, 0], fov: 30 },   // materials — pulled back so whole shoe visible
-  { pos: [-3.6, 0.8, 4.2], tgt: [0, 0.15, 0], fov: 34 }, // performance — side profile
-  { pos: [0, 0.3, 4.0], tgt: [0, 0, 0], fov: 30 },     // colorways — front hero
-  { pos: [4.2, 0.6, 1.2], tgt: [0, 0, 0], fov: 32 },   // 360 orbit
-  { pos: [1.4, 0.6, 3.2], tgt: [0, 0.1, 0], fov: 32 }, // technology — heel/back 3/4
-  { pos: [0, 0.4, 4.6], tgt: [0, 0, 0], fov: 28 },     // finale — wide cinematic
+  { pos: [0, 0.4, 4.2], tgt: [0, 0, 0], fov: 32 },              // 0 hero
+  { pos: [2.8, 1.2, 3.6], tgt: [0, 0.05, 0], fov: 30 },         // 1 architecture — 3/4 reveal
+  { pos: [-2.4, 0.5, 2.2], tgt: [-0.2, 0.2, 0.1], fov: 24 },    // 2 materials A — upper fabric macro
+  { pos: [-0.6, -0.7, 2.0], tgt: [0, -0.35, 0], fov: 22 },      // 3 materials B — outsole macro
+  { pos: [1.6, 0.1, 2.0], tgt: [0.25, 0.0, -0.05], fov: 22 },   // 4 materials C — stitching / side panel
+  { pos: [1.4, 0.5, -2.4], tgt: [0.1, 0.2, -0.4], fov: 26 },    // 5 materials D — heel construction
+  { pos: [-3.6, 0.8, 4.2], tgt: [0, 0.15, 0], fov: 34 },        // 6 performance — side profile
+  { pos: [0, 0.3, 4.0], tgt: [0, 0, 0], fov: 30 },              // 7 colorways
+  { pos: [4.2, 0.6, 1.2], tgt: [0, 0, 0], fov: 32 },            // 8 360 orbit
+  { pos: [1.4, 0.6, 3.2], tgt: [0, 0.1, 0], fov: 32 },          // 9 technology
+  { pos: [0, 0.4, 4.6], tgt: [0, 0, 0], fov: 28 },              // 10 finale
 ];
+
+// Section index → primary camera keyframe. Materials section sweeps cam keys 2→5.
+const SECTION_CAMS: number[] = [0, 1, 2, 6, 7, 8, 9, 10];
+const MATERIALS_SECTION = 2;
+const MATERIALS_CAM_RANGE: [number, number] = [2, 5];
 
 
 function CameraRig({ shoeRef }: { shoeRef: React.MutableRefObject<THREE.Group | null> }) {
