@@ -50,36 +50,27 @@ export function LeoSite() {
       sections.forEach((sec, i) => {
         ScrollTrigger.create({
           trigger: sec,
+          start: "top bottom",
+          end: "bottom top",
+          scrub: true,
+          onUpdate: (self) => {
+            // Map raw scroll across the section to 0..1 over the section's
+            // "in-view" portion so the camera reaches its target before exit.
+            const raw = self.progress; // 0 when top hits viewport bottom, 1 when bottom hits top
+            const eased = Math.min(1, Math.max(0, (raw - 0.15) / 0.7));
+            if (scrollState.section === i) {
+              scrollState.sectionProgress = eased;
+            }
+          },
+        });
+        ScrollTrigger.create({
+          trigger: sec,
           start: "top center",
           end: "bottom center",
           onToggle: (self) => {
             if (self.isActive) scrollState.section = i;
           },
         });
-        // Explode driven by section scroll for both architecture and materials
-        if (sec.dataset.section === "exploded" || sec.dataset.section === "materials") {
-          ScrollTrigger.create({
-            trigger: sec,
-            start: "top bottom",
-            end: "bottom top",
-            scrub: true,
-            onUpdate: (self) => {
-              // ease in then hold then ease out so parts are fully separated mid-section
-              const p = self.progress;
-              const eased = p < 0.5 ? p * 2 : (1 - p) * 2;
-              scrollState.explode = Math.min(1, Math.max(0, eased));
-            },
-          });
-        } else {
-          // ensure explode collapses back outside these sections
-          ScrollTrigger.create({
-            trigger: sec,
-            start: "top center",
-            end: "bottom center",
-            onEnter: () => { scrollState.explode = 0; },
-            onEnterBack: () => { scrollState.explode = 0; },
-          });
-        }
       });
 
       void total;
@@ -126,7 +117,7 @@ export function LeoSite() {
             id={s.id}
             data-section={s.id}
             className="leo-section relative min-h-screen flex items-center"
-            style={{ height: s.id === "exploded" ? "180vh" : "100vh" }}
+            style={{ height: s.id === "materials" ? "260vh" : s.id === "exploded" ? "150vh" : "100vh" }}
           >
             <div className="w-full px-6 md:px-16">
               <motion.div

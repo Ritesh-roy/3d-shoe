@@ -12,17 +12,25 @@ import { Shoe, type Colorway } from "./Shoe";
 import { Particles } from "./Particles";
 import { scrollState } from "./scrollState";
 
-// Camera keyframes per section (position + lookAt target)
+// Camera keyframes — cinematic storytelling, shoe stays fully assembled
 const CAM_KEYS: Array<{ pos: [number, number, number]; tgt: [number, number, number]; fov: number }> = [
-  { pos: [0, 0.4, 4.2], tgt: [0, 0, 0], fov: 32 },     // hero — large hero shot
-  { pos: [3.2, 1.6, 4.6], tgt: [0, 0, 0], fov: 34 },   // exploded — 3/4 view, pulled back
-  { pos: [2.4, 0.6, 4.2], tgt: [0, 0, 0], fov: 30 },   // materials — pulled back so whole shoe visible
-  { pos: [-3.6, 0.8, 4.2], tgt: [0, 0.15, 0], fov: 34 }, // performance — side profile
-  { pos: [0, 0.3, 4.0], tgt: [0, 0, 0], fov: 30 },     // colorways — front hero
-  { pos: [4.2, 0.6, 1.2], tgt: [0, 0, 0], fov: 32 },   // 360 orbit
-  { pos: [1.4, 0.6, 3.2], tgt: [0, 0.1, 0], fov: 32 }, // technology — heel/back 3/4
-  { pos: [0, 0.4, 4.6], tgt: [0, 0, 0], fov: 28 },     // finale — wide cinematic
+  { pos: [0, 0.4, 4.2], tgt: [0, 0, 0], fov: 32 },              // 0 hero
+  { pos: [2.8, 1.2, 3.6], tgt: [0, 0.05, 0], fov: 30 },         // 1 architecture — 3/4 reveal
+  { pos: [-2.4, 0.5, 2.2], tgt: [-0.2, 0.2, 0.1], fov: 24 },    // 2 materials A — upper fabric macro
+  { pos: [-0.6, -0.7, 2.0], tgt: [0, -0.35, 0], fov: 22 },      // 3 materials B — outsole macro
+  { pos: [1.6, 0.1, 2.0], tgt: [0.25, 0.0, -0.05], fov: 22 },   // 4 materials C — stitching / side panel
+  { pos: [1.4, 0.5, -2.4], tgt: [0.1, 0.2, -0.4], fov: 26 },    // 5 materials D — heel construction
+  { pos: [-3.6, 0.8, 4.2], tgt: [0, 0.15, 0], fov: 34 },        // 6 performance — side profile
+  { pos: [0, 0.3, 4.0], tgt: [0, 0, 0], fov: 30 },              // 7 colorways
+  { pos: [4.2, 0.6, 1.2], tgt: [0, 0, 0], fov: 32 },            // 8 360 orbit
+  { pos: [1.4, 0.6, 3.2], tgt: [0, 0.1, 0], fov: 32 },          // 9 technology
+  { pos: [0, 0.4, 4.6], tgt: [0, 0, 0], fov: 28 },              // 10 finale
 ];
+
+// Section index → primary camera keyframe. Materials section sweeps cam keys 2→5.
+const SECTION_CAMS: number[] = [0, 1, 2, 6, 7, 8, 9, 10];
+const MATERIALS_SECTION = 2;
+const MATERIALS_CAM_RANGE: [number, number] = [2, 5];
 
 
 function CameraRig({ shoeRef }: { shoeRef: React.MutableRefObject<THREE.Group | null> }) {
@@ -31,21 +39,34 @@ function CameraRig({ shoeRef }: { shoeRef: React.MutableRefObject<THREE.Group | 
   const tmpTgt = useRef(new THREE.Vector3());
 
   useFrame((_, dt) => {
-    const total = CAM_KEYS.length - 1;
-    const p = scrollState.progress * total;
-    const i = Math.floor(p);
-    const f = p - i;
-    const a = CAM_KEYS[Math.min(i, total)];
-    const b = CAM_KEYS[Math.min(i + 1, total)];
+    // Build a fractional camera-key position from active section + sub-progress.
+    // Materials section sweeps across an inner cam-key range for cinematic macros.
+    const sIdx = Math.min(SECTION_CAMS.length - 1, Math.max(0, scrollState.section));
+    const sProg = Math.min(1, Math.max(0, scrollState.sectionProgress));
+
+    let camPos: number;
+    if (sIdx === MATERIALS_SECTION) {
+      const [a, b] = MATERIALS_CAM_RANGE;
+      camPos = a + (b - a) * sProg;
+    } else {
+      const fromCam = SECTION_CAMS[sIdx];
+      const toCam = SECTION_CAMS[Math.min(sIdx + 1, SECTION_CAMS.length - 1)];
+      camPos = fromCam + (toCam - fromCam) * sProg;
+    }
+
+    const totalKeys = CAM_KEYS.length - 1;
+    const i = Math.min(totalKeys, Math.floor(camPos));
+    const f = camPos - i;
+    const a = CAM_KEYS[i];
+    const b = CAM_KEYS[Math.min(i + 1, totalKeys)];
 
     tmpPos.current.set(
       THREE.MathUtils.lerp(a.pos[0], b.pos[0], f),
       THREE.MathUtils.lerp(a.pos[1], b.pos[1], f),
       THREE.MathUtils.lerp(a.pos[2], b.pos[2], f),
     );
-    // subtle mouse parallax
-    tmpPos.current.x += scrollState.mouseX * 0.25;
-    tmpPos.current.y += scrollState.mouseY * 0.15;
+    tmpPos.current.x += scrollState.mouseX * 0.2;
+    tmpPos.current.y += scrollState.mouseY * 0.12;
 
     tmpTgt.current.set(
       THREE.MathUtils.lerp(a.tgt[0], b.tgt[0], f),
@@ -53,20 +74,19 @@ function CameraRig({ shoeRef }: { shoeRef: React.MutableRefObject<THREE.Group | 
       THREE.MathUtils.lerp(a.tgt[2], b.tgt[2], f),
     );
 
-    camera.position.lerp(tmpPos.current, Math.min(1, dt * 4));
+    camera.position.lerp(tmpPos.current, Math.min(1, dt * 3));
     const persp = camera as THREE.PerspectiveCamera;
     const targetFov = THREE.MathUtils.lerp(a.fov, b.fov, f);
-    persp.fov += (targetFov - persp.fov) * Math.min(1, dt * 4);
+    persp.fov += (targetFov - persp.fov) * Math.min(1, dt * 3);
     persp.updateProjectionMatrix();
     camera.lookAt(tmpTgt.current);
 
-    // Shoe slow rotation for 360 section (5..6)
+    // Slow 360 rotation when on the orbit section (index 5)
     if (shoeRef.current) {
-      const seg = scrollState.progress * total;
       let rotY = 0;
-      if (seg > 4.5 && seg < 6) rotY = (seg - 4.5) * Math.PI * 1.6;
-      else if (seg >= 6) rotY = 1.5 * Math.PI * 1.6;
-      shoeRef.current.rotation.y += (rotY - shoeRef.current.rotation.y) * Math.min(1, dt * 3);
+      if (sIdx === 5) rotY = sProg * Math.PI * 2;
+      else if (sIdx > 5) rotY = Math.PI * 2;
+      shoeRef.current.rotation.y += (rotY - shoeRef.current.rotation.y) * Math.min(1, dt * 2.5);
     }
   });
   return null;
@@ -75,14 +95,9 @@ function CameraRig({ shoeRef }: { shoeRef: React.MutableRefObject<THREE.Group | 
 function SceneInner() {
   const shoeRef = useRef<THREE.Group | null>(null);
   const [colorway, setColorway] = useState<Colorway>("white");
-  const [explode, setExplode] = useState(0);
 
   useFrame(() => {
     if (scrollState.colorway !== colorway) setColorway(scrollState.colorway);
-    const target = scrollState.explode;
-    if (Math.abs(target - explode) > 0.005) {
-      setExplode(explode + (target - explode) * 0.12);
-    }
   });
 
   return (
@@ -111,7 +126,7 @@ function SceneInner() {
 
       <Float speed={1.1} rotationIntensity={0.12} floatIntensity={0.3}>
         <group ref={shoeRef} position={[0, 0, 0]}>
-          <Shoe colorway={colorway} explode={explode} targetSize={2.85} />
+          <Shoe colorway={colorway} targetSize={2.85} />
         </group>
       </Float>
 
