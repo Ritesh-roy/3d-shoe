@@ -79,12 +79,30 @@ export function Shoe({ colorway = "white", explode = 0, targetSize = 2.2 }: Shoe
           mat.needsUpdate = true;
         });
         (mesh.userData as any).origPos = mesh.position.clone();
-        const meshWorld = new THREE.Vector3();
-        mesh.getWorldPosition(meshWorld);
-        const dir = meshWorld.clone().sub(center).normalize();
-        if (!isFinite(dir.x) || dir.lengthSq() === 0) {
-          dir.set((Math.random() - 0.5) * 2, Math.random(), (Math.random() - 0.5) * 2).normalize();
+        const meshBox = new THREE.Box3().setFromObject(mesh);
+        const meshCenter = new THREE.Vector3();
+        meshBox.getCenter(meshCenter);
+        const rel = meshCenter.clone().sub(center);
+        const halfY = size.y * 0.5 || 1;
+        const halfZ = size.z * 0.5 || 1;
+        const ny = rel.y / halfY; // -1..1
+        const nz = rel.z / halfZ;
+        // Bucket into 4 major parts and pick a single clean axis per part
+        const dir = new THREE.Vector3();
+        if (ny < -0.35) {
+          // outsole / studs — drop downward
+          dir.set(0, -1, 0);
+        } else if (ny < 0.05) {
+          // midsole — small downward
+          dir.set(0, -0.55, 0);
+        } else if (nz < -0.3) {
+          // heel structure — push backward
+          dir.set(0, 0.2, -1);
+        } else {
+          // upper fabric — lift upward
+          dir.set(0, 1, 0.05);
         }
+        dir.normalize();
         (mesh.userData as any).explodeDir = dir;
       }
     });
