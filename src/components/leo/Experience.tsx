@@ -126,7 +126,7 @@ function SceneInner() {
 
       <Float speed={1.1} rotationIntensity={0.12} floatIntensity={0.3}>
         <group ref={shoeRef} position={[0, 0, 0]}>
-          <Shoe colorway={colorway} explode={explode} targetSize={2.85} />
+          <Shoe colorway={colorway} targetSize={2.85} />
         </group>
       </Float>
 
