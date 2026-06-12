@@ -214,7 +214,7 @@ export function Shoe({ colorway = "white", explode = 0, targetSize = 2.2 }: Shoe
   // Color tinting (re-tints all part meshes)
   useEffect(() => {
     const tint = new THREE.Color(COLORS[colorway]);
-    built.traverse((obj) => {
+    built.traverse((obj: THREE.Object3D) => {
       const mesh = obj as THREE.Mesh;
       if (mesh.isMesh && mesh.material) {
         const mat = mesh.material as THREE.MeshStandardMaterial;
