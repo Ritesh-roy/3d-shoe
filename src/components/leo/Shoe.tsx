@@ -156,7 +156,7 @@ export function Shoe({ colorway = "white", explode = 0, targetSize = 2.2 }: Shoe
 
     // Collect every mesh, then split each into part-meshes.
     const sourceMeshes: THREE.Mesh[] = [];
-    source.traverse((obj) => {
+    source.traverse((obj: THREE.Object3D) => {
       const m = obj as THREE.Mesh;
       if (m.isMesh) sourceMeshes.push(m);
     });
