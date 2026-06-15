@@ -222,6 +222,20 @@ export function LeoSite() {
       {/* Bottom gradient on finale for extra drama */}
       <div className="pointer-events-none fixed inset-x-0 bottom-0 h-48 bg-gradient-to-t from-[#06070a] to-transparent z-20" />
       <div className="pointer-events-none fixed inset-x-0 top-0 h-32 bg-gradient-to-b from-[#06070a] to-transparent z-20" />
+
+      {/* Developer credit */}
+      <footer className="relative z-30 border-t border-white/10 bg-[#06070a] py-6 px-6 md:px-10 flex items-center justify-between text-[10px] tracking-[0.35em] text-white/50">
+        <span>© LEO FOOTWEAR — FW / 26</span>
+        <span>
+          DEVELOPED BY{" "}
+          <a
+            href="#"
+            className="text-white/90 hover:text-white transition font-semibold tracking-[0.4em]"
+          >
+            RITESH ROY
+          </a>
+        </span>
+      </footer>
     </div>
   );
 }
