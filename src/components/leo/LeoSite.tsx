@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { motion } from "framer-motion";
+import Lenis from "lenis";
 import { Experience } from "./Experience";
 import { scrollState } from "./scrollState";
 import type { Colorway } from "./Shoe";
