@@ -35,9 +35,24 @@ export function LeoSite() {
 
   useEffect(() => {
     if (!wrap.current) return;
+
+    // Smooth scrolling via Lenis, synced with GSAP ScrollTrigger
+    const lenis = new Lenis({
+      duration: 1.25,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      smoothWheel: true,
+      wheelMultiplier: 1,
+      touchMultiplier: 1.2,
+    });
+    lenis.on("scroll", ScrollTrigger.update);
+    const raf = (time: number) => {
+      lenis.raf(time * 1000);
+    };
+    gsap.ticker.add(raf);
+    gsap.ticker.lagSmoothing(0);
+
     const ctx = gsap.context(() => {
       const sections = gsap.utils.toArray<HTMLElement>(".leo-section");
-      const total = sections.length;
 
       ScrollTrigger.create({
         trigger: wrap.current!,
@@ -55,13 +70,9 @@ export function LeoSite() {
           end: "bottom top",
           scrub: true,
           onUpdate: (self) => {
-            // Map raw scroll across the section to 0..1 over the section's
-            // "in-view" portion so the camera reaches its target before exit.
-            const raw = self.progress; // 0 when top hits viewport bottom, 1 when bottom hits top
-            const eased = Math.min(1, Math.max(0, (raw - 0.15) / 0.7));
-            if (scrollState.section === i) {
-              scrollState.sectionProgress = eased;
-            }
+            const eased = Math.min(1, Math.max(0, (self.progress - 0.15) / 0.7));
+            scrollState.progresses[i] = eased;
+            if (scrollState.section === i) scrollState.sectionProgress = eased;
           },
         });
         ScrollTrigger.create({
@@ -69,14 +80,20 @@ export function LeoSite() {
           start: "top center",
           end: "bottom center",
           onToggle: (self) => {
-            if (self.isActive) scrollState.section = i;
+            if (self.isActive) {
+              scrollState.section = i;
+              scrollState.sectionProgress = scrollState.progresses[i];
+            }
           },
         });
       });
-
-      void total;
     }, wrap);
-    return () => ctx.revert();
+
+    return () => {
+      ctx.revert();
+      gsap.ticker.remove(raf);
+      lenis.destroy();
+    };
   }, []);
 
   const pickColor = (c: Colorway) => {
