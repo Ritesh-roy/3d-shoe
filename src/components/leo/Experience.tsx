@@ -16,10 +16,10 @@ import { scrollState } from "./scrollState";
 const CAM_KEYS: Array<{ pos: [number, number, number]; tgt: [number, number, number]; fov: number }> = [
   { pos: [0, 0.4, 4.2], tgt: [0, 0, 0], fov: 32 },              // 0 hero
   { pos: [2.8, 1.2, 3.6], tgt: [0, 0.05, 0], fov: 30 },         // 1 architecture — 3/4 reveal
-  { pos: [-2.4, 0.5, 2.2], tgt: [-0.2, 0.2, 0.1], fov: 24 },    // 2 materials A — upper fabric macro
-  { pos: [-0.6, -0.7, 2.0], tgt: [0, -0.35, 0], fov: 22 },      // 3 materials B — outsole macro
-  { pos: [1.6, 0.1, 2.0], tgt: [0.25, 0.0, -0.05], fov: 22 },   // 4 materials C — stitching / side panel
-  { pos: [1.4, 0.5, -2.4], tgt: [0.1, 0.2, -0.4], fov: 26 },    // 5 materials D — heel construction
+  { pos: [-3.2, 1.0, 3.4], tgt: [-0.1, 0.2, 0.1], fov: 28 },    // 2 materials A — upper fabric (full shoe in frame)
+  { pos: [-1.2, -0.6, 3.6], tgt: [0, -0.2, 0], fov: 28 },       // 3 materials B — outsole / underside angle
+  { pos: [2.6, 0.3, 3.4], tgt: [0.15, 0.05, 0], fov: 28 },      // 4 materials C — stitching / side panel
+  { pos: [2.4, 0.8, -3.4], tgt: [0.1, 0.2, -0.2], fov: 30 },    // 5 materials D — heel construction
   { pos: [-3.6, 0.8, 4.2], tgt: [0, 0.15, 0], fov: 34 },        // 6 performance — side profile
   { pos: [0, 0.3, 4.0], tgt: [0, 0, 0], fov: 30 },              // 7 colorways
   { pos: [4.2, 0.6, 1.2], tgt: [0, 0, 0], fov: 32 },            // 8 360 orbit
