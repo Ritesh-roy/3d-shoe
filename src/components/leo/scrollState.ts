@@ -4,7 +4,8 @@
 export const scrollState = {
   progress: 0, // 0..1 across the whole page
   section: 0, // 0..7
-  sectionProgress: 0, // 0..1 within the active section
+  sectionProgress: 0, // 0..1 within the active section (mirrors progresses[section])
+  progresses: [0, 0, 0, 0, 0, 0, 0, 0] as number[], // per-section progress
   explode: 0, // legacy, unused
   colorway: "white" as "white" | "grey" | "red" | "volt",
   mouseX: 0,
