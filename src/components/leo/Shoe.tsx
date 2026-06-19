@@ -4,7 +4,14 @@ import { useEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import shoeAsset from "@/assets/leo-shoe.glb.asset.json";
 
-useGLTF.preload(shoeAsset.url);
+// Lovable asset URLs are relative to the Lovable host. On other hosts
+// (Vercel, custom domains) they 404 — rewrite to the absolute CDN origin.
+const LOVABLE_ASSET_HOST = `https://id-preview--${shoeAsset.project_id}.lovable.app`;
+const SHOE_URL = shoeAsset.url.startsWith("/__l5e/")
+  ? `${LOVABLE_ASSET_HOST}${shoeAsset.url}`
+  : shoeAsset.url;
+
+useGLTF.preload(SHOE_URL);
 
 export type Colorway = "white" | "grey" | "red" | "volt";
 
@@ -22,7 +29,7 @@ interface ShoeProps {
 }
 
 export function Shoe({ colorway = "white", targetSize = 2.2 }: ShoeProps) {
-  const { scene } = useGLTF(shoeAsset.url) as any;
+  const { scene } = useGLTF(SHOE_URL) as any;
   const { gl } = useThree();
   const root = useRef<THREE.Group>(null);
 
