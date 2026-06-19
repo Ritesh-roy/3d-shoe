@@ -34,13 +34,11 @@ const MATERIALS_CAM_RANGE: [number, number] = [2, 5];
 
 
 function CameraRig({ shoeRef }: { shoeRef: React.MutableRefObject<THREE.Group | null> }) {
-  const { camera } = useThree();
+  const { camera, size } = useThree();
   const tmpPos = useRef(new THREE.Vector3());
   const tmpTgt = useRef(new THREE.Vector3());
 
   useFrame((_, dt) => {
-    // Build a fractional camera-key position from active section + sub-progress.
-    // Materials section sweeps across an inner cam-key range for cinematic macros.
     const sIdx = Math.min(SECTION_CAMS.length - 1, Math.max(0, scrollState.section));
     const sProg = Math.min(1, Math.max(0, scrollState.sectionProgress));
 
@@ -60,10 +58,16 @@ function CameraRig({ shoeRef }: { shoeRef: React.MutableRefObject<THREE.Group | 
     const a = CAM_KEYS[i];
     const b = CAM_KEYS[Math.min(i + 1, totalKeys)];
 
+    // Responsive framing: on narrow/portrait viewports, push camera back and
+    // widen FOV so the whole shoe stays in frame instead of cropping.
+    const aspect = size.width / Math.max(1, size.height);
+    const distScale = aspect < 1 ? THREE.MathUtils.lerp(1.9, 1.0, Math.min(1, aspect / 1)) : 1;
+    const fovBoost = aspect < 1 ? THREE.MathUtils.lerp(12, 0, Math.min(1, aspect / 1)) : 0;
+
     tmpPos.current.set(
-      THREE.MathUtils.lerp(a.pos[0], b.pos[0], f),
+      THREE.MathUtils.lerp(a.pos[0], b.pos[0], f) * distScale,
       THREE.MathUtils.lerp(a.pos[1], b.pos[1], f),
-      THREE.MathUtils.lerp(a.pos[2], b.pos[2], f),
+      THREE.MathUtils.lerp(a.pos[2], b.pos[2], f) * distScale,
     );
     tmpPos.current.x += scrollState.mouseX * 0.2;
     tmpPos.current.y += scrollState.mouseY * 0.12;
@@ -76,12 +80,11 @@ function CameraRig({ shoeRef }: { shoeRef: React.MutableRefObject<THREE.Group | 
 
     camera.position.lerp(tmpPos.current, Math.min(1, dt * 3));
     const persp = camera as THREE.PerspectiveCamera;
-    const targetFov = THREE.MathUtils.lerp(a.fov, b.fov, f);
+    const targetFov = THREE.MathUtils.lerp(a.fov, b.fov, f) + fovBoost;
     persp.fov += (targetFov - persp.fov) * Math.min(1, dt * 3);
     persp.updateProjectionMatrix();
     camera.lookAt(tmpTgt.current);
 
-    // Slow 360 rotation when on the orbit section (index 5)
     if (shoeRef.current) {
       let rotY = 0;
       if (sIdx === 5) rotY = sProg * Math.PI * 2;
